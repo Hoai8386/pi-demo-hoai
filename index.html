@@ -38,8 +38,8 @@
   <button onclick="testPayment()">Thanh toán demo 1 Pi</button>
 
   <script>
-    Pi.init({ version: "2.0" }); // Khởi tạo Pi SDK
-
+    Pi.init({ version: "2.0",{sandbox:true }); // Khởi tạo Pi SDK
+Pi.authenticate(['payments']);
     async function testPayment() {
       try {
         const payment = await Pi.createPayment({
