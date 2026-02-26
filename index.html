@@ -37,13 +37,9 @@
   <p>Nhấn nút dưới để test thanh toán 1 Pi (demo):</p>
   <button onclick="testPayment()">Thanh toán demo 1 Pi</button>
 
-<script>
-// 1. Khởi tạo SDK
-Pi.init({ version: "2.0", sandbox: true });
-
-// 2. Xác thực thanh toán
-Pi.authenticate(['payments'],onIncompletePaymentFound);
-
+function onIncompletePaymentFound(payment) {
+    console.log("Phát hiện thanh toán chưa hoàn tất:", payment.identifier);
+};
 async function testPayment() {
   try {
     const payment = await Pi.createPayment({
