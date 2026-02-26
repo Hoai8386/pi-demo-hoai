@@ -39,10 +39,10 @@
 
 <script>
 // 1. Khởi tạo SDK
-Pi.init({ version: "2.0", sandbox: true }
+Pi.init({ version: "2.0", sandbox: true });
 
 // 2. Xác thực thanh toán
-Pi.authenticate(['payments']
+Pi.authenticate(['payments'],onIncompletePaymentFound);
 
 async function testPayment() {
   try {
