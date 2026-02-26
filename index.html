@@ -37,32 +37,40 @@
   <p>Nhấn nút dưới để test thanh toán 1 Pi (demo):</p>
   <button onclick="testPayment()">Thanh toán demo 1 Pi</button>
 
-  <script>
-    Pi.init({ version: "2.0",{sandbox:true }); // Khởi tạo Pi SDK
+<script>
+// 1. Khởi tạo SDK
+Pi.init({ version: "2.0", sandbox: true });
+
+// 2. Xác thực thanh toán
 Pi.authenticate(['payments']);
-    async function testPayment() {
-      try {
-        const payment = await Pi.createPayment({
-          amount: 1, // Số Pi thanh toán (test nhỏ thôi)
-          memo: "Test thanh toán từ app demo",
-          metadata: { appName: "Nông Sản Xuất Nhập Khẩu" }
-        }, {
-          onReadyForServerApproval: function(paymentId) {
-            console.log("Ready for approval: " + paymentId);
-            // Gửi paymentId lên server nếu có backend, hoặc test đơn giản thì skip
-          },
-          onReadyForServerCompletion: function(paymentId, txid) {
-            console.log("Payment completed: " + txid);
-            alert("Thanh toán thành công! TxID: " + txid);
-          },
-          onCancel: function() { alert("Thanh toán bị hủy"); },
-          onError: function(error) { alert("Lỗi: " + error.message); }
-        });
-        console.log("Payment created: " + payment.paymentId);
-      } catch (err) {
-        alert("Lỗi khởi tạo thanh toán: " + err);
+
+async function testPayment() {
+  try {
+    const payment = await Pi.createPayment({
+      amount: 1,
+      memo: "Test thanh toán từ app demo",
+      metadata: { appName: "Nông Sản Xuất Nhập Khẩu" }
+    }, {
+      onReadyForServerApproval: function(paymentId) {
+        console.log("Ready for approval: " + paymentId);
+        // Lưu ý: Bạn cần có Backend để gọi API Approve thì giao dịch mới đi tiếp được
+      },
+      onReadyForServerCompletion: function(paymentId, txid) {
+        console.log("Payment completed: " + txid);
+        alert("Thanh toán thành công! TxID: " + txid);
+      },
+      onCancel: function() { 
+        alert("Thanh toán bị hủy"); 
+      },
+      onError: function(error) { 
+        alert("Lỗi: " + error.message); 
       }
-    }
+    });
+  } catch (err) {
+    alert("Lỗi khởi tạo thanh toán: " + err);
+  }
+}
+</script>
   </script>
 </body>
 </html>
