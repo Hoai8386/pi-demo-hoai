@@ -35,38 +35,76 @@
   <h1>Xin chào Pi Network! App của em đã live rồi 🤩</h1>
   <p>Domain verified thành công! Subdomain PiNet: nong-sanxuatkhaau8255.pi</p>
   <p>Nhấn nút dưới để test thanh toán 1 Pi (demo):</p>
-  <button onclick="testPayment()">Thanh toán demo 1 Pi</button>
+<button onclick="testPayment()">Thanh toán demo 1 Pi</button>
 
-function onIncompletePaymentFound(payment) {
-    console.log("Phát hiện thanh toán chưa hoàn tất:", payment.identifier);
-};
-async function testPayment() {
-  try {
-    const payment = await Pi.createPayment({
-      amount: 1,
-      memo: "Test thanh toán từ app demo",
-      metadata: { appName: "Nông Sản Xuất Nhập Khẩu" }
-    }, {
-      onReadyForServerApproval: function(paymentId) {
-        console.log("Ready for approval: " + paymentId);
-        // Lưu ý: Bạn cần có Backend để gọi API Approve thì giao dịch mới đi tiếp được
-      },
-      onReadyForServerCompletion: function(paymentId, txid) {
-        console.log("Payment completed: " + txid);
-        alert("Thanh toán thành công! TxID: " + txid);
-      },
-      onCancel: function() { 
-        alert("Thanh toán bị hủy"); 
-      },
-      onError: function(error) { 
-        alert("Lỗi: " + error.message); 
+  <script>
+    // Xử lý incomplete payment (bắt buộc theo Pi SDK)
+    function onIncompletePaymentFound(payment) {
+      console.log('Phát hiện thanh toán cũ chưa hoàn tất:', payment);
+
+      if (!payment || !payment.identifier) return;
+
+      const paymentId = payment.identifier;
+      const txid = payment.transaction?.txid || null;
+
+      fetch('/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId, txid, type: 'incomplete' })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Backend lỗi');
+        return res.json();
+      })
+      .then(data => console.log('Hoàn tất thanh toán cũ OK:', data))
+      .catch(err => console.error('Lỗi xử lý thanh toán cũ:', err));
+    }
+
+    // Hàm thanh toán demo
+    async function testPayment() {
+      try {
+        await Pi.createPayment(
+          {
+            amount: 1,
+            memo: 'Test thanh toán từ app demo',
+            metadata: { appName: 'Nông Sản Xuất Nhập Khẩu' }
+          },
+          {
+            onReadyForServerApproval: paymentId => {
+              console.log('Ready approve:', paymentId);
+              fetch('/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId })
+              }).catch(err => console.error('Approve lỗi:', err));
+            },
+            onReadyForServerCompletion: (paymentId, txid) => {
+              console.log('Ready complete:', paymentId, txid);
+              fetch('/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId, txid })
+              })
+              .then(res => res.json())
+              .then(data => alert(`Thành công! TxID: ${txid}`))
+              .catch(err => console.error('Complete lỗi:', err));
+            },
+            onCancel: () => alert('Thanh toán bị hủy'),
+            onError: error => alert('Lỗi: ' + (error.message || 'Không rõ'))
+          }
+        );
+      } catch (err) {
+        alert('Lỗi khởi tạo thanh toán: ' + (err.message || 'Không rõ'));
       }
     }
-  } catch (err) {
-    alert("Lỗi khởi tạo thanh toán: " + err);
-  }
-}
-</script>
-  </script>
-</body>
-</html>
+
+    // Đăng nhập Pi khi load trang
+    Pi.authenticate(['payments'], onIncompletePaymentFound)
+      .then(auth => {
+        console.log('Đăng nhập thành công:', auth.user?.username || 'Unknown');
+      })
+      .catch(err => {
+        console.error('Lỗi đăng nhập:', err);
+        alert('Lỗi đăng nhập Pi: ' + (err.message || 'Không rõ'));
+      });
+  </script>>
