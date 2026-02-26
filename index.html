@@ -36,7 +36,7 @@
 
     <script>
         // 1. Khởi tạo Pi SDK (Sửa lỗi "not initialized")
-        Pi.init({ version: "2.0", sandbox: true });
+        Pi.init({ version: "2.0", sandbox: false });
 
         // 2. Xác thực người dùng khi vào trang
         Pi.authenticate(['payments', 'username'], onIncompletePaymentFound)
