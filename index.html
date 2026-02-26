@@ -1,110 +1,78 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pi Demo App - Công ty Xuất Nhập Khẩu Khẩu Nông Sản</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f0f8ff; }
-    h1 { color: #4CAF50; }
-    p { font-size: 18px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <title>Pi Demo App - Nông Sản Xuất Khẩu</title>
+    
+    <!-- Nhúng Pi SDK chuẩn (BẮT BUỘC) -->
+    <script src="https://sdk.minepi.com"></script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background-color: #f0f8ff; }
+        h1 { color: #4CAF50; }
+        p { font-size: 18px; color: #333; }
+        .btn-pay { 
+            padding: 15px 30px; 
+            background-color: #4CAF50; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .btn-pay:hover { background-color: #45a049; }
+    </style>
 </head>
 <body>
-  <h1>Xin chào Pi Network! App của em đã live rồi 🤩</h1>
-  <p>Domain verified thành công! Subdomain PiNet: nong-sanxuatkhaau8255.pi</p>
-  <p>Đây là trang demo đơn giản để test trong Pi Browser.</p>
-  <p>Em sẽ thêm SDK Pi và chức năng sau nhé!</p>
+
+    <h1>Xin chào Pi Network!</h1>
+    <p>Tên miền phụ PiNet: <strong>nong-sanxuatkhau8255.pi</strong></p>
+    <p>Ứng dụng của em đã tồn tại và sẵn sàng tích hợp SDK.</p>
+    
+    <button class="btn-pay" onclick="createPayment()">THANH TOÁN THỬ NGHIỆM</button>
+
+    <script>
+        // 1. Khởi tạo Pi SDK (Sửa lỗi "not initialized")
+        Pi.init({ version: "2.0", sandbox: true });
+
+        // 2. Xác thực người dùng khi vào trang
+        Pi.authenticate(['payments', 'username'], onIncompletePaymentFound)
+        .then(function(auth) {
+            console.log("Đăng nhập thành công: " + auth.user.username);
+        }).catch(function(error) {
+            console.error(error);
+        });
+
+        // 3. Hàm tạo thanh toán
+        function createPayment() {
+            const paymentData = {
+                amount: 1.0, 
+                memo: "Thanh toán đơn hàng nông sản", 
+                metadata: { orderId: 123 }
+            };
+
+            Pi.createPayment(paymentData, {
+                onReadyForServerApproval: function(paymentId) {
+                    console.log("Chờ Server phê duyệt ID:", paymentId);
+                    // Gửi paymentId lên server của bạn tại đây
+                },
+                onReadyForServerCompletion: function(paymentId, txid) {
+                    console.log("Giao dịch hoàn tất! TxID:", txid);
+                    alert("Thanh toán thành công! TxID: " + txid);
+                },
+                onCancel: function(paymentId) { console.log("Đã hủy thanh toán"); },
+                onError: function(error, paymentId) { console.error("Lỗi:", error); }
+            });
+        }
+
+        // 4. Xử lý giao dịch chưa hoàn tất
+        function onIncompletePaymentFound(payment) {
+            console.log("Phát hiện giao dịch chưa hoàn tất:", payment);
+        };
+    </script>
+
 </body>
 </html>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pi Demo App - Công ty Xuất Nhập Khẩu Nông Sản</title>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script> <!-- Pi SDK -->
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f0f8ff; }
-    h1 { color: #4CAF50; }
-    p { font-size: 18px; }
-    button { padding: 15px 30px; background: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 18px; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <h1>Xin chào Pi Network! App của em đã live rồi 🤩</h1>
-  <p>Domain verified thành công! Subdomain PiNet: nong-sanxuatkhaau8255.pi</p>
-  <p>Nhấn nút dưới để test thanh toán 1 Pi (demo):</p>
-<button onclick="testPayment()">Thanh toán demo 1 Pi</button>
-
-  <script>
-    // Xử lý incomplete payment (bắt buộc theo Pi SDK)
-    function onIncompletePaymentFound(payment) {
-      console.log('Phát hiện thanh toán cũ chưa hoàn tất:', payment);
-
-      if (!payment || !payment.identifier) return;
-
-      const paymentId = payment.identifier;
-      const txid = payment.transaction?.txid || null;
-
-      fetch('/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId, txid, type: 'incomplete' })
-      })
-      .then(res => {
-        if (!res.ok) throw new Error('Backend lỗi');
-        return res.json();
-      })
-      .then(data => console.log('Hoàn tất thanh toán cũ OK:', data))
-      .catch(err => console.error('Lỗi xử lý thanh toán cũ:', err));
-    }
-
-    // Hàm thanh toán demo
-    async function testPayment() {
-      try {
-        await Pi.createPayment(
-          {
-            amount: 1,
-            memo: 'Test thanh toán từ app demo',
-            metadata: { appName: 'Nông Sản Xuất Nhập Khẩu' }
-          },
-          {
-            onReadyForServerApproval: paymentId => {
-              console.log('Ready approve:', paymentId);
-              fetch('/approve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId })
-              }).catch(err => console.error('Approve lỗi:', err));
-            },
-            onReadyForServerCompletion: (paymentId, txid) => {
-              console.log('Ready complete:', paymentId, txid);
-              fetch('/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId, txid })
-              })
-              .then(res => res.json())
-              .then(data => alert(`Thành công! TxID: ${txid}`))
-              .catch(err => console.error('Complete lỗi:', err));
-            },
-            onCancel: () => alert('Thanh toán bị hủy'),
-            onError: error => alert('Lỗi: ' + (error.message || 'Không rõ'))
-          }
-        );
-      } catch (err) {
-        alert('Lỗi khởi tạo thanh toán: ' + (err.message || 'Không rõ'));
-      }
-    }
-
-    // Đăng nhập Pi khi load trang
-    Pi.authenticate(['payments'], onIncompletePaymentFound)
-      .then(auth => {
-        console.log('Đăng nhập thành công:', auth.user?.username || 'Unknown');
-      })
-      .catch(err => {
-        console.error('Lỗi đăng nhập:', err);
-        alert('Lỗi đăng nhập Pi: ' + (err.message || 'Không rõ'));
-      });
-  </script>>
