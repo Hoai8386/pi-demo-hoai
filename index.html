@@ -28,7 +28,16 @@
       color: #2e7d32; 
       font-weight: bold; 
     }
-    button { 
+    button :// Login Pi để kích hoạt SDK
+Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
+  .then((auth) => {
+    console.log("Login Pi thành công! Username:", auth.user.username);
+    alert("Đã login Pi: " + auth.user.username);
+  })
+  .catch(err => {
+    console.error("Lỗi login Pi:", err);
+    alert("Lỗi login Pi: " + err.message);
+  }); 
       padding: 16px 40px; 
       background: #4caf50; 
       color: white; 
