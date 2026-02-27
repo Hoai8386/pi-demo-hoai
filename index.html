@@ -71,7 +71,16 @@ Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
 
     // 2. Xin quyền payments ngay khi load trang
     Pi.authenticate(['payments'], onIncompletePaymentFound)
-      .then(() => {
+      .then(() => {// Login Pi để kích hoạt SDK và quyền payments
+Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
+  .then((auth) => {
+    console.log("Login Pi thành công! Username:", auth.user.username);
+    alert("Đã login Pi: " + auth.user.username);
+  })
+  .catch(err => {
+    console.error("Lỗi login Pi:", err);
+    alert("Lỗi login Pi: " + (err.message || err));
+  });
         console.log("Đã xin quyền payments thành công!");
       })
       .catch(err => {
