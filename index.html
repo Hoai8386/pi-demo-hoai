@@ -92,20 +92,25 @@ Pi.authenticate(['username', 'payments',roles,in_app_notification], onIncomplete
       console.log("Có payment dang dở:", payment.paymentId);
     }
 
-    // 3. Hàm thanh toán demo
-    async function testPayment() {
-      console.log("Nút thanh toán được nhấn!");
+   // 3. Hàm thanh toán demo
+async function testPayment() {
+    try {
+        const payment = {
+            amount: 1,
+            memo: "Test thanh toán 1 Pi - Demo App",
+            metadata: {
+                appName: "Công ty Xuất Nhập Khẩu",
+                type: "demo"
+            }
+        };
 
-      try {
-        const payment = await Pi.createPayment({
-          amount: 1,
-          memo: "Test thanh toán 1 Pi từ app demo",
-          metadata: { 
-            appName: "Công ty Xuất Nhập Khẩu Nông Sản", 
-            orderId: "demo-" + Date.now() 
-          }
-        }, {
-          onReadyForServerApproval: function(paymentId) {
-            console.log("Ready for server approval - paymentId:", paymentId);
-          },
-          onReadyForServerCompletion: function(paymentId, txid) {
+        const result = await window.Pi.createPayment(payment);
+
+        alert("✅ Thanh toán thành công!\nTransaction ID: " + result.transactionId);
+        console.log("Payment success:", result);
+
+    } catch (error) {
+        console.error("Payment error:", error);
+        alert("❌ Thanh toán thất bại: " + (error.message || error));
+    }
+}
