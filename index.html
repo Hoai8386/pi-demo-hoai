@@ -48,9 +48,7 @@
             box-shadow: 0 4px 15px rgba(74, 222, 128, 0.4);
         }
 
-        .button:disabled {
-            opacity: 0.7;
-        }
+        .button:disabled { opacity: 0.7; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -72,17 +70,11 @@
         </button>
     </div>
 
-    <!-- Pi SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
-        let piUser = null;
-
         async function initPi() {
             try {
-                await Pi.init({
-                    version: "2.0",
-                    sandbox: true   // Đổi thành false khi deploy production
-                });
+                await Pi.init({ version: "2.0", sandbox: true });
                 console.log("✅ Pi SDK Initialized");
             } catch (e) {
                 console.error(e);
@@ -94,46 +86,44 @@
             const originalText = btn.textContent;
 
             btn.disabled = true;
-            btn.textContent = "Đang kết nối...";
+            btn.textContent = "Đang xử lý...";
 
             try {
-                // Xác thực người dùng
-                if (!piUser) {piUser = await Pi.authenticate(['username', 'payments']);
-                }
+                // Authenticate user
+                await Pi.authenticate(['username', 'payments']);
 
-                // Tạo thanh toán
-                const payment = await Pi.createPayment({
+                const paymentData = {
                     amount: 1,
-                    memo: "Mua 1kg Nông Sản Test - Demo",
-                    metadata: { 
-                        product: "NongSanTest",
-                        type: "demo"
+                    memo: "Mua 1kg Nông Sản Test - Demo",metadata: { product: "NongSanTest", type: "demo" }
+                };
+
+                const callbacks = {
+                    onReadyForServerApproval: (paymentId) => {
+                        console.log("Ready for approval:", paymentId);
                     },
-                    // === Các callback quan trọng (bắt buộc) ===
-                    onReadyForPayment: () => {
-                        console.log("✅ Ready for payment");
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        console.log("Payment completed:", txid);
+                        alert(`✅ Thanh toán thành công!\n\nSố tiền: 1 π\nTransaction ID: ${txid || paymentId}`);
                     },
-                    onPaymentSuccess: (payment) => {
-                        alert(`✅ Thanh toán thành công!\n\nSố tiền: 1 π\nTransaction ID: ${payment.identifier || 'SUCCESS'}`);
-                    },
-                    onPaymentError: (error) => {
-                        alert("❌ Thanh toán thất bại: " + error.message);
-                    },
-                    onPaymentCancelled: () => {
+                    onCancel: (paymentId) => {
                         alert("⚠️ Thanh toán đã bị hủy.");
+                    },
+                    onError: (error, payment) => {
+                        alert("❌ Lỗi thanh toán: " + error.message);
                     }
-                });
+                };
+
+                Pi.createPayment(paymentData, callbacks);
 
             } catch (error) {
                 console.error(error);
-                alert("❌ Lỗi: " + (error.message || "Không thể thực hiện thanh toán"));
+                alert("❌ Có lỗi xảy ra: " + (error.message || error));
             } finally {
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
         }
 
-        // Khởi tạo SDK
         window.onload = initPi;
     </script>
 </body>
