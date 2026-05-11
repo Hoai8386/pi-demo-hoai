@@ -65,53 +65,56 @@ Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
   <button onclick="testPayment()">Thanh toán demo 1 Pi</button>
 
   <script>
-    // 1. Khởi tạo Pi SDK với sandbox Testnet
-    Pi.init({ version: "2.0", sandbox: false });
-    console.log("Pi SDK khởi tạo thành công với sandbox: false");
+// Đảm bảo Pi SDK đã load
+const Pi = window.Pi;
 
-    // 2. Xin quyền payments ngay khi load trang
-    Pi.authenticate(['payments'], onIncompletePaymentFound)
-      .then(() => {// Login Pi để kích hoạt SDK và quyền payments
-Pi.authenticate(['username', 'payments',roles,in_app_notification], onIncompletePaymentFound)
-  .then((auth) => {
-    console.log("Login Pi thành công!, auth.user);
+// 1. Khởi tạo Pi SDK
+Pi.init({ version: "2.0", sandbox: true });   // Dùng sandbox: true khi test
+
+// 2. Xác thực người dùng + xin quyền payments
+Pi.authenticate(['payments'], {
+    onIncompletePaymentFound: (payment) => {
+        console.log("Có payment dang dở:", payment.paymentId);
+        return payment; // Hoặc xử lý tiếp
+    }
+}).then(auth => {
+    console.log("Login Pi thành công!", auth.user);
     alert("Đã login Pi: " + auth.user.username);
-  })
-  .catch(err => {
-    console.error("Lỗi login Pi:", err);
+}).catch(err => {
+    console.error("Lỗi login:", err);
     alert("Lỗi login Pi: " + (err.message || err));
-  });
-        console.log("Đã xin quyền payments thành công!");
-      })
-      .catch(err => {
-        console.error("Lỗi xin quyền payments:", err);
-        alert("Lỗi xin quyền payments: " + (err.message || err));
-      });
+});
 
-    function onIncompletePaymentFound(payment) {
-      console.log("Có payment dang dở:", payment.paymentId);
-    }
+// === HÀM THANH TOÁN DEMO ===
+function testPayment() {
+    const paymentData = {
+        amount: 1,                    // Số Pi demo (miễn phí trong sandbox)
+        memo: "Test thanh toán demo 1 Pi",
+        metadata: { 
+            type: "demo",
+            item: "test_payment"
+        }
+    };
 
-   // === HÀM THANH TOÁN DEMO ===
-async function testPayment() {
-    try {
-        const payment = {
-            amount: 1,
-            memo: "Test thanh toán 1 Pi - Demo App",
-            metadata: {
-                appName: "Công ty Xuất Nhập Khẩu",
-                type: "demo"
-            }
-        };
+    const paymentCallbacks = {
+        onReadyForServerApproval: (paymentId) => {
+            console.log("✅ Payment ready for approval:", paymentId);
+            // Nếu bạn có backend, gọi API approve paymentId ở đây
+        },
+        onReadyForServerCompletion: (paymentId, txid) => {
+            console.log("✅ Payment completed! TxID:", txid);
+            alert("Thanh toán thành công! TxID: " + txid);
+        },
+        onCancel: (paymentId) => {
+            console.log("❌ User cancelled payment:", paymentId);
+            alert("Bạn đã hủy thanh toán.");
+        },
+        onError: (error, payment) => {
+            console.error("❌ Payment error:", error);
+            alert("Lỗi thanh toán: " + error.message);
+        }
+    };
 
-        console.log("Đang tạo thanh toán...");
-        const result = await window.Pi.createPayment(payment);
-        
-        alert("✅ Thanh toán thành công!\nTransaction ID: " + (result.transactionId || "OK"));
-        console.log("Payment success:", result);
-
-    } catch (error) {
-        console.error("Payment Error:", error);
-        alert("❌ Thanh toán thất bại: " + (error.message || "Lỗi không xác định"));
-    }
+    Pi.createPayment(paymentData, paymentCallbacks);
 }
+</script>
