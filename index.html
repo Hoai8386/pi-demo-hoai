@@ -3,75 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CNS - Thanh Toán Pi</title>
+    <title>CNS Pi Demo</title>
     <style>
         body {
             font-family: system-ui, sans-serif;
-            background: linear-gradient(#f0fdf4, #ecfdf5);
+            background: #f0fdf4;
             color: #166534;
             text-align: center;
-            padding: 40px 20px;
-            min-height: 100vh;
+            padding: 50px 20px;
         }
         .card {
             background: white;
-            max-width: 420px;
-            margin: 0 auto;
-            padding: 30px;
+            padding: 40px 20px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: 0 auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         button {
-            background: #4ade80;
-            color: #14532d;
+            background: #22c55e;
+            color: white;
             border: none;
             padding: 18px 40px;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: bold;
             border-radius: 50px;
-            margin-top: 20px;
             width: 100%;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="card">
         <h1>🌾 CNS Nông Sản</h1>
-        <p style="margin: 20px 0; font-size: 1.1rem;">
-            Thanh toán demo <strong>1 Pi</strong>
+        <p style="margin: 25px 0; font-size: 1.15rem;">
+            Test Thanh Toán <strong>1 Pi</strong>
         </p>
-        <button onclick="payWithPi()">Thanh Toán Bằng Pi</button>
+        <button onclick="makePayment()">Thanh Toán Bằng Pi</button>
     </div>
 
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
-        async function payWithPi() {
+        async function makePayment() {
             const btn = event.target;
             btn.disabled = true;
-            btn.textContent = "Đang kết nối...";
+            btn.innerHTML = "Đang xử lý...";
 
             try {
-                // Khởi tạo SDK
-                await Pi.init({ version: "2.0", sandbox: true });
-
-                // Xác thực người dùng
-                await Pi.authenticate(['payments']);
-
-                // Tạo thanh toán - Cách đơn giản nhất
-                const payment = await Pi.createPayment({
-                    amount: 1,
-                    memo: "Test thanh toán 1 Pi - CNS App",
-                    metadata: { type: "demo" }
+                await Pi.init({ 
+                    version: "2.0", 
+                    sandbox: true 
                 });
 
-                alert("✅ Thanh toán thành công!\nTransaction: " + (payment.identifier || "Demo Success"));
+                await Pi.authenticate(['payments']);
 
-            } catch (error) {
-                console.error(error);
-                alert("❌ Lỗi: " + (error.message || "Thanh toán thất bại. Vui lòng thử lại."));
+                const payment = await Pi.createPayment({
+                    amount: 1,
+                    memo: "Demo 1 Pi - CNS App",
+                    metadata: { test: true }
+                });
+
+                alert("✅ Thanh toán thành công!\n\nĐây là demo test.");
+
+            } catch (err) {
+                console.error(err);
+                alert("❌ Lỗi: " + (err.message || "Không xác định"));
             } finally {
                 btn.disabled = false;
-                btn.textContent = "Thanh Toán Bằng Pi";
+                btn.innerHTML = "Thanh Toán Bằng Pi";
             }
         }
     </script>
