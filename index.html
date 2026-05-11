@@ -3,116 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CNS Nông Sản - Pi Network</title>
+    <title>CNS Nông Sản</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: system-ui, sans-serif;
-            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+            background: linear-gradient(#f0fdf4, #ecfdf5);
             color: #166534;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { max-width: 480px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .logo { font-size: 3.8rem; }
-        h1 { color: #15803d; margin: 10px 0; }
-        
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 18px;
-        }
-        .product-card {
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
             text-align: center;
+            padding: 40px 20px;
+            min-height: 100vh;
         }
-        .price { font-size: 2.1rem; font-weight: bold; color: #16a34a; margin: 12px 0; }
-        .button {
+        .card {
+            background: white;
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 40px 25px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        button {
             background: #22c55e;
             color: white;
             border: none;
-            padding: 16px;
-            font-size: 1.15rem;
-            font-weight: 700;
+            padding: 18px;
+            font-size: 1.25rem;
+            font-weight: bold;
             border-radius: 50px;
             width: 100%;
-            cursor: pointer;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">🌾</div>
-            <h1>CNS Nông Sản</h1>
-            <p>Kết nối nông dân - Người tiêu dùng qua Pi Network</p>
-        </div>
-
-        <div class="product-grid">
-            <div class="product-card">
-                <h3>Gạo ST25</h3>
-                <p>1kg</p>
-                <div class="price">0.5 π</div>
-                <button class="button" onclick="pay(0.5, 'Gạo ST25 1kg')">Thanh Toán</button>
-            </div>
-            <div class="product-card">
-                <h3>Dừa Xiêm</h3>
-                <p>5 trái</p>
-                <div class="price">1 π</div>
-                <button class="button" onclick="pay(1, 'Dừa Xiêm 5 trái')">Thanh Toán</button>
-            </div>
-        </div>
+    <div class="card">
+        <h1>🌾 CNS Nông Sản</h1>
+        <p style="margin: 25px 0; font-size: 1.2rem;">Thanh toán demo 1 Pi</p>
+        <button onclick="makePayment()">Thanh Toán Bằng Pi</button>
     </div>
 
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
-        async function pay(amount, product) {
+        async function makePayment() {
             const btn = event.target;
-            const originalText = btn.textContent;
             btn.disabled = true;
             btn.textContent = "Đang xử lý...";
 
             try {
-                await Pi.init({ version: "2.0", sandbox: false }); // false = Mainnet
+                await Pi.init({ version: "2.0", sandbox: true });
 
                 await Pi.authenticate(['payments']);
 
                 const paymentData = {
-                    amount: amount,
-                    memo: `${product} - CNS Nông Sản`,
-                    metadata: {
-                        product: product,
-                        amount: amount,app: "cns-nongsan",
-                        timestamp: Date.now()
-                    }
+                    amount: 1,
+                    memo: "Test Transaction - CNS Nông Sản",
+                    metadata: { type: "verification", app: "cns-nongsan" }
                 };
 
                 const callbacks = {
-                    onReadyForServerApproval: async (paymentId) => {
-                        await fetch('/api/payment', {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({ action: "approve", paymentId, amount, product })
-                        });
-                    },
+                    onReadyForServerApproval: () => {},
                     onReadyForServerCompletion: (paymentId, txid) => {
-                        alert(`✅ Thanh toán thành công!\n\nSản phẩm: ${product}\nSố tiền: ${amount} π\nTXID: ${txid}`);
+                        alert(`✅ Giao dịch thành công!\n\nTransaction ID: ${txid || paymentId}\n\nBạn đã hoàn thành bước cuối cùng!`);
                     },
-                    onCancel: () => alert("⚠️ Thanh toán đã bị hủy."),
-                    onError: (error) => alert("❌ Lỗi: " + error.message)
+                    onCancel: () => alert("Thanh toán bị hủy."),
+                    onError: (err) => alert("Lỗi: " + err.message)
                 };
 
                 Pi.createPayment(paymentData, callbacks);
 
-            } catch (error) {
-                alert("Lỗi: " + (error.message || "Vui lòng thử lại sau"));
+            } catch (err) {
+                alert("❌ Lỗi: " + err.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = originalText;
+                btn.textContent = "Thanh Toán Bằng Pi";
             }
         }
     </script>
