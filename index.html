@@ -92,7 +92,7 @@ Pi.authenticate(['username', 'payments',roles,in_app_notification], onIncomplete
       console.log("Có payment dang dở:", payment.paymentId);
     }
 
-   // 3. Hàm thanh toán demo
+   // === HÀM THANH TOÁN DEMO ===
 async function testPayment() {
     try {
         const payment = {
@@ -104,13 +104,14 @@ async function testPayment() {
             }
         };
 
+        console.log("Đang tạo thanh toán...");
         const result = await window.Pi.createPayment(payment);
-
-        alert("✅ Thanh toán thành công!\nTransaction ID: " + result.transactionId);
+        
+        alert("✅ Thanh toán thành công!\nTransaction ID: " + (result.transactionId || "OK"));
         console.log("Payment success:", result);
 
     } catch (error) {
-        console.error("Payment error:", error);
-        alert("❌ Thanh toán thất bại: " + (error.message || error));
+        console.error("Payment Error:", error);
+        alert("❌ Thanh toán thất bại: " + (error.message || "Lỗi không xác định"));
     }
 }
