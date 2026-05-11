@@ -5,90 +5,130 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pi Demo App - Nông Sản Xuất Nhập Khẩu</title>
     
-    <!-- Pi SDK -->
+    <!-- Pi Network SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            text-align: center; 
-            padding: 50px; 
-            background: #f0f8ff; 
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f0f8ff, #e0f7fa);
+            margin: 0;
+            min-height: 100vh;
         }
-        h1 { color: #4CAF50; }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #4CAF50;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.1em;
+            color: #555;
+        }
         button {
-            padding: 15px 30px;
+            padding: 16px 40px;
             font-size: 18px;
+            font-weight: bold;
             background: #4CAF50;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            transition: all 0.3s;
         }
-        button:hover { background: #45a049; }
+        button:hover {
+            background: #45a049;
+            transform: translateY(-3px);
+        }
+        .success { color: #4CAF50; }
     </style>
 </head>
 <body>
-    <h1>Xin chào Pi Network! 🎉</h1>
-    <h2>App của em đã live rồi</h2>
-    <p><strong>Domain verified:</strong> nong-sanxuatkhau8255.pi</p>
-    <p>Nhấn nút dưới để test thanh toán 1 Pi (demo)</p>
-    
-    <button onclick="testPayment()">Thanh toán demo 1 Pi</button>
+    <div class="container">
+        <h1>Xin chào Pi Network! 🎉</h1>
+        <h2>App của em đã live rồi</h2>
+        <p><strong>Domain:</strong> nong-sanxuatkhau8255.pi</p>
+        <p>Nhấn nút bên dưới để test thanh toán 1 Pi (demo)</p>
+
+        <button onclick="testPayment()">💰 Thanh toán demo 1 Pi</button>
+    </div>
 
     <script>
-        // ==================== KHỞI TẠO SDK (BẮT BUỘC) ====================
-        Pi.init({ version: "2.0" });   // ← Dòng này rất quan trọng!
+        // ==================== KHỞI TẠO PI SDK ====================
+        Pi.init({ version: "2.0" });
 
-        // Xử lý thanh toán cũ chưa hoàn tất
+        let currentUser = null;
+
+        // Xử lý thanh toán chưa hoàn tất (incomplete)
         function onIncompletePaymentFound(payment) {
-            console.log("🔄 Phát hiện thanh toán cũ:", payment);
-            if (!payment?.identifier) return;
+            console.log("🔄 Tìm thấy thanh toán cũ chưa hoàn tất:", payment);
         }
 
-        // Hàm thanh toán demo
+        // Đăng nhập Pi
+        async function loginWithPi() {
+            try {
+                const auth = await Pi.authenticate(['payments'], onIncompletePaymentFound);
+                currentUser = auth.user;
+                console.log("✅ Đăng nhập Pi thành công:", currentUser.username);
+            } catch (err) {
+                console.error("❌ Lỗi đăng nhập:", err);
+            }
+        }
+
+        // Test thanh toán 1 Pi
         async function testPayment() {
+            if (!currentUser) {
+                alert("Vui lòng chờ đăng nhập Pi hoàn tất!");
+                return;
+            }
+
             try {
                 await Pi.createPayment(
                     {
-                        amount: 1,
-                        memo: "Test thanh toán từ app demo",
-                        metadata: { appName: "Nông Sản Xuất Nhập Khẩu" }
+                        amount: 1,memo: "Test thanh toán từ app demo",
+                        metadata: { 
+                            appName: "Nông Sản Xuất Nhập Khẩu" 
+                        }
                     },
                     {
                         onReadyForServerApproval: (paymentId) => {
-                            console.log("📌 Ready for approval:", paymentId);
+                            console.log("📌 Đang chờ approve:", paymentId);
                         },
 
                         onReadyForServerCompletion: (paymentId, txid) => {
-                            console.log("✅ Thanh toán hoàn tất! TxID:", txid);
-                            alert(`🎉 Thanh toán thành công!\n\nTxID: ${txid}`);
+                            console.log("✅ Thanh toán thành công! TxID:", txid);
+                            alert(`🎉 THANH TOÁN THÀNH CÔNG!\n\nTxID: ${txid}`);
                         },
 
                         onCancel: () => {
-                            alert("🚫 Thanh toán đã bị hủy.");
+                            alert("🚫 Bạn đã hủy thanh toán.");
                         },
 
                         onError: (error) => {
-                            console.error("❌ Lỗi:", error);
-                            alert("Lỗi thanh toán: " + (error.message || "Không xác định"));
+                            console.error("❌ Lỗi thanh toán:", error);
+                            alert("❌ Lỗi: " + (error.message || "Không xác định"));
                         }
                     }
                 );
             } catch (err) {
-                console.error("❌ Lỗi createPayment:", err);
-                alert("Lỗi khởi tạo: " + (err.message || "Không xác định"));
+                console.error("❌ Lỗi tạo payment:", err);
+                alert("Lỗi tạo thanh toán: " + (err.message || "Không xác định"));
             }
-        }// Đăng nhập Pi
-        Pi.authenticate(['payments'], onIncompletePaymentFound)
-            .then(auth => {
-                console.log("✅ Đăng nhập Pi thành công:", auth.user?.username || "Unknown");
-            })
-            .catch(err => {
-                console.error("❌ Lỗi đăng nhập:", err);
-                alert("Lỗi đăng nhập Pi: " + (err.message || "Không xác định"));
-            });
+        }
+
+        // Tự động đăng nhập khi trang load
+        window.onload = loginWithPi;
     </script>
 </body>
 </html>
