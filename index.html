@@ -66,15 +66,15 @@ Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
 
   <script>
     // 1. Khởi tạo Pi SDK với sandbox Testnet
-    Pi.init({ version: "2.0", sandbox: true });
-    console.log("Pi SDK khởi tạo thành công với sandbox: true");
+    Pi.init({ version: "2.0", sandbox: false });
+    console.log("Pi SDK khởi tạo thành công với sandbox: false");
 
     // 2. Xin quyền payments ngay khi load trang
     Pi.authenticate(['payments'], onIncompletePaymentFound)
       .then(() => {// Login Pi để kích hoạt SDK và quyền payments
-Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
+Pi.authenticate(['username', 'payments',roles,in_app_notification], onIncompletePaymentFound)
   .then((auth) => {
-    console.log("Login Pi thành công! Username:", auth.user.username);
+    console.log("Login Pi thành công!, auth.user);
     alert("Đã login Pi: " + auth.user.username);
   })
   .catch(err => {
