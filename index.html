@@ -3,112 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pi Demo - Hoài</title>
-    
-    <!-- Font Awesome (nếu cần icon) -->
+    <title>Develop - CNS | Pi Network</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    
     <style>
         :root {
-            --primary: #0ea5e9;
-            --dark: #0f172a;
-            --gray: #1e2937;
+            --primary: #7c3aed;
+            --dark: #1e1b4b;
+            --accent: #a855f7;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background: var(--dark);
-            color: #e2e8f0;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            color: white;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            padding: 16px;
         }
 
         .container {
-            background: var(--gray);
-            padding: 40px 30px;
+            max-width: 480px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .header {
+            background: linear-gradient(90deg, #6d28d9, #a855f7);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .content { padding: 24px; }
+
+        .company-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 68px; height: 68px;
+            background: white;
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            max-width: 800px;
-            width: 100%;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        h1 {
-            font-size: 2.8rem;
-            margin-bottom: 16px;
-            background: linear-gradient(90deg, #0ea5e9, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .testnet {
+            background: #eab308;
+            color: #1e2937;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-weight: 600;
         }
 
-        p {
-            font-size: 1.1rem;
-            color: #94a3b8;
-            margin-bottom: 30px;
-            line-height: 1.6;
+        .progress-bar {
+            height: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 9999px;
+            overflow: hidden;
+            margin: 8px 0;
         }
 
-        .demo-content {
-            margin: 30px 0;
+        .progress { width: 90%; height: 100%; background: linear-gradient(90deg, #c026d3, #a855f7); }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .label { color: #c4d0ff; }
+        .value { font-weight: 500; text-align: right; }
+
+        /* Thanh Toán Demo */
+        .payment-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
             padding: 20px;
-            background: rgba(15, 23, 42, 0.6);
-            border-radius: 12px;
-            border: 1px solid #334155;
+            margin: 24px 0;
+            border: 1px solid rgba(167, 139, 250, 0.3);
         }
 
-        button {
-            background: var(--primary);
+        .payment-title {
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            color: #e0e7ff;
+        }.amount {
+            text-align: center;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #67e8f9;
+            margin: 8px 0;
+        }
+
+        .pay-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #7c3aed, #d946ef);
             color: white;
             border: none;
-            padding: 14px 32px;
+            padding: 18px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 9999px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pay-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.5);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        .menu-item {
+            background: rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 16px 8px;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .menu-item:hover {
+            background: rgba(167, 139, 250, 0.3);
+            transform: translateY(-4px);
+        }
+
+        .back-btn {
+            width: 100%;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: none;
+            padding: 16px;
             font-size: 1.1rem;
             font-weight: 600;
-            border-radius: 50px;
+            border-radius: 16px;
+            margin-top: 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 10px;
-        }
-
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(14, 165, 233, 0.4);
-        }
-
-        .footer {
-            margin-top: 40px;
-            font-size: 0.9rem;
-            color: #64748b;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌟 Pi Demo</h1>
-        <p>Ứng dụng demo đơn giản - Chào mừng bạn!</p>
-
-        <div class="demo-content">
-            <h2 id="message">Nhấn nút bên dưới để thử nghiệm</h2>
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-code"></i>
+                <h1>Develop</h1>
+            </div>
+            <i class="fas fa-chevron-down"></i>
         </div>
 
-        <button onclick="showMessage()">
-            <i class="fas fa-magic"></i> Thử ngay
-        </button>
+        <div class="content">
+            <div class="company-info">
+                <div class="logo">🌾</div>
+                <div>
+                    <h2>Công ty Xuất Nhập Khẩu Nông Sản</h2>
+                    <span class="testnet">Testnet</span>
+                </div>
+            </div>
 
-        <button onclick="resetMessage()">
-            <i class="fas fa-undo"></i> Reset
-        </button>
+            <div class="progress-bar"><div class="progress"></div></div>
+            <p style="text-align:center; font-size:0.9rem;">Completed Steps: 9 of 10</p>
+
+            <div class="info-row"><span class="label">URL</span><span class="value">https://pi-demo-hoai.vercel.app</span></div>
+            <div class="info-row"><span class="label">Description</span><span class="value">Ứng dụng kết nối nông sản</span></div>
+            <div class="info-row"><span class="label">Slug</span><span class="value">congtyxuatnhapkhau nongsan-pi</span></div>
+            <div class="info-row"><span class="label">Wallet</span><span class="value">GB6ET...XVGTZ</span></div>
+
+            <!-- Thanh Toán Demo 0.5 π --><div class="payment-section">
+                <h3 class="payment-title">💰 Thanh Toán Demo</h3>
+                <div class="amount">0.5 π</div>
+                <p style="text-align:center; color:#a5b4fc;">Mua 1kg Nông Sản Test</p>
+                
+                <button class="pay-btn" onclick="payWithPi()">
+                    <i class="fas fa-paper-plane"></i>
+                    Thanh Toán Bằng Pi
+                </button>
+            </div>
+
+            <div class="grid">
+                <div class="menu-item" onclick="alert('Mở Checklist')"><i class="fas fa-check-square fa-2x"></i><div>Checklist</div></div>
+                <div class="menu-item" onclick="alert('Mở Wallet')"><i class="fas fa-wallet fa-2x"></i><div>Wallet</div></div>
+                <div class="menu-item" onclick="alert('Mở Configuration')"><i class="fas fa-cog fa-2x"></i><div>Config</div></div>
+            </div>
+
+            <button class="back-btn" onclick="goBack()">
+                ← Go Back to My Apps
+            </button>
+        </div>
     </div>
 
-    <div class="footer">
-        Made with ❤️ by Hoài • GitHub: hoai3305
-    </div>
+    <script>
+        function payWithPi() {
+            const btn = document.querySelector('.pay-btn');
+            const originalText = btn.innerHTML;
+
+            btn.style.background = '#22c55e';
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang xử lý...`;
+
+            setTimeout(() => {
+                alert("✅ Thanh toán thành công!\n\nBạn đã thanh toán 0.5 π\nTransaction ID: #PI20260511DEMO");
+                
+                btn.style.background = '';
+                btn.innerHTML = originalText;
+            }, 1600);
+        }
+
+        function goBack() {
+            alert("Đang chuyển về trang My Apps...");
+        }
+    </script>
+</body>
+</html>
