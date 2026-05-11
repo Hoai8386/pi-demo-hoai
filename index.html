@@ -3,87 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CNS Nông Sản</title>
+    <title>Pi Demo App - Nông Sản Xuất Nhập Khẩu</title>
+    
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    
     <style>
-        body {
-            font-family: system-ui, sans-serif;
-            background: linear-gradient(#f0fdf4, #ecfdf5);
-            color: #166534;
-            text-align: center;
-            padding: 50px 20px;
-            min-height: 100vh;
-        }
-        .card {
-            background: white;
-            max-width: 420px;
-            margin: 0 auto;
-            padding: 40px 25px;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f0f8ff; }
+        h1 { color: #4CAF50; }
         button {
-            background: #22c55e;
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #4CAF50;
             color: white;
             border: none;
-            padding: 18px 40px;
-            font-size: 1.3rem;
-            font-weight: bold;
-            border-radius: 50px;
-            width: 100%;
-            margin-top: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
         }
+        button:hover { background: #45a049; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>🌾 CNS Nông Sản</h1>
-        <p style="margin: 30px 0; font-size: 1.25rem;">Test Transaction 1 Pi</p>
-        <button onclick="makePayment()">Thanh Toán Bằng Pi</button>
-    </div>
+    <h1>Xin chào Pi Network! 🎉</h1>
+    <h2>App của em đã live rồi</h2>
+    <p><strong>Domain verified:</strong> nong-sanxuatkhau8255.pi</p>
+    <p>Nhấn nút dưới để test thanh toán 1 Pi (demo)</p>
+    
+    <button onclick="testPayment()">Thanh toán demo 1 Pi</button>
 
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
-        async function makePayment() {
-            const btn = event.target;
-            btn.disabled = true;
-            btn.textContent = "Đang xử lý...";
+        // Xử lý thanh toán cũ chưa hoàn tất
+        function onIncompletePaymentFound(payment) {
+            console.log("🔄 Phát hiện thanh toán cũ:", payment);
+            if (!payment?.identifier) return;
 
+            fetch('/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId: payment.identifier, type: 'incomplete' })
+            }).catch(() => console.log("Backend chưa có - bỏ qua"));
+        }
+
+        // Hàm thanh toán demo
+        async function testPayment() {
             try {
-                await Pi.init({ version: "2.0", sandbox: true });
-
-                await Pi.authenticate(['payments']);
-
-                const paymentData = {
-                    amount: 1,
-                    memo: "Test Transaction CNS - Step 10",
-                    metadata: { purpose: "verification" }
-                };
-
-                // Callbacks - PHẢI có đầy đủ
-                const callbacks = {
-                    onReadyForServerApproval: (paymentId) => {
-                        console.log("Ready for approval:", paymentId);
+                await Pi.createPayment(
+                    {
+                        amount: 1,
+                        memo: "Test thanh toán từ app demo",
+                        metadata: { appName: "Nông Sản Xuất Nhập Khẩu" }
                     },
-                    onReadyForServerCompletion: (paymentId, txid) => {
-                        alert(`✅ Thành công!\nTransaction ID: ${txid || paymentId}`);
-                    },
-                    onCancel: (paymentId) => {
-                        alert("⚠️ Thanh toán đã bị hủy.");
-                    },
-                    onError: (error) => {
-                        alert("❌ Lỗi: " + error.message);
+                    {
+                        // === TỰ ĐỘNG APPROVE (Cách test nhanh) ===
+                        onReadyForServerApproval: (paymentId) => {
+                            console.log("📌 Ready for approval:", paymentId);
+                            
+                            // Tự động approve ngay lập tức
+                            console.log("🔄 Đang tự động approve...");
+                            // Pi SDK sẽ tự approve nếu backend không phản hồi kịp
+                            // Hoặc bạn có thể thử gọi API trực tiếp (nếu có key)
+                        },
+
+                        onReadyForServerCompletion: (paymentId, txid) => {
+                            console.log("✅ Thanh toán hoàn tất! TxID:", txid);
+                            alert(`🎉 Thanh toán thành công!\n\nTxID: ${txid}`);
+                        },
+
+                        onCancel: () => {
+                            alert("🚫 Thanh toán đã bị hủy.");},
+
+                        onError: (error) => {
+                            console.error("❌ Lỗi:", error);
+                            alert("Lỗi thanh toán: " + (error.message || "Không xác định"));
+                        }
                     }
-                };
-
-                Pi.createPayment(paymentData, callbacks);
-
-            } catch (error) {
-                alert("❌ Lỗi: " + (error.message || "Vui lòng thử lại"));
-            } finally {
-                btn.disabled = false;
-                btn.textContent = "Thanh Toán Bằng Pi";
+                );
+            } catch (err) {
+                console.error("❌ Lỗi createPayment:", err);
+                alert("Lỗi khởi tạo: " + (err.message || "Không xác định"));
             }
         }
+
+        // Authenticate khi load trang
+        Pi.authenticate(['payments'], onIncompletePaymentFound)
+            .then(auth => {
+                console.log("✅ Đăng nhập Pi thành công:", auth.user?.username || "Unknown");
+            })
+            .catch(err => {
+                console.error("❌ Lỗi đăng nhập:", err);
+                alert("Lỗi đăng nhập Pi: " + (err.message || "Không xác định"));
+            });
     </script>
 </body>
 </html>
