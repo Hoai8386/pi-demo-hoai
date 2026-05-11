@@ -3,84 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pi Demo App - Nông Sản Xuất Nhập Khẩu</title>
+    <title>Pi Demo - Hoài</title>
     
-    <!-- Pi SDK -->
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <!-- Font Awesome (nếu cần icon) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
-            background: #f0f8ff;
+        :root {
+            --primary: #0ea5e9;
+            --dark: #0f172a;
+            --gray: #1e2937;
         }
-        h1 { color: #4CAF50; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--dark);
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--gray);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 16px;
+            background: linear-gradient(90deg, #0ea5e9, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .demo-content {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
         button {
-            padding: 15px 30px;
-            font-size: 18px;
-            background: #4CAF50;
+            background: var(--primary);
             color: white;
             border: none;
-            border-radius: 8px;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
             cursor: pointer;
-            margin-top: 20px;
+            transition: all 0.3s ease;
+            margin: 10px;
         }
+
         button:hover {
-            background: #45a049;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(14, 165, 233, 0.4);
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #64748b;
         }
     </style>
 </head>
 <body>
-    <h1>Xin chào Pi Network! 🎉</h1>
-    <h2>App của em đã live rồi</h2>
-    <p><strong>Domain verified:</strong> nong-sanxuatkhau8255.pi</p>
-    <p>Nhấn nút dưới để test thanh toán 1 Pi (demo)</p>
-    
-    <button onclick="testPayment()">Thanh toán demo 1 Pi</button>
+    <div class="container">
+        <h1>🌟 Pi Demo</h1>
+        <p>Ứng dụng demo đơn giản - Chào mừng bạn!</p>
 
-    <script>
-        // ====================== PI PAYMENT SDK ======================
-        
-        // Xử lý thanh toán cũ chưa hoàn tất (BẮT BUỘC)
-        function onIncompletePaymentFound(payment) {
-            console.log("🔄 Phát hiện thanh toán cũ chưa hoàn tất:", payment);
+        <div class="demo-content">
+            <h2 id="message">Nhấn nút bên dưới để thử nghiệm</h2>
+        </div>
 
-            if (!payment || !payment.identifier) return;
+        <button onclick="showMessage()">
+            <i class="fas fa-magic"></i> Thử ngay
+        </button>
 
-            const paymentId = payment.identifier;
-            const txid = payment.transaction?.txid || null;
+        <button onclick="resetMessage()">
+            <i class="fas fa-undo"></i> Reset
+        </button>
+    </div>
 
-            // Gọi backend để hoàn tất thanh toán cũ
-            fetch('/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    paymentId, 
-                    txid, 
-                    type: 'incomplete' 
-                })
-            })
-            .then(res => {
-                if (!res.ok) throw new Error('Backend lỗi');
-                return res.json();
-            })
-            .then(data => console.log('✅ Hoàn tất thanh toán cũ thành công:', data))
-            .catch(err => console.error('❌ Lỗi xử lý thanh toán cũ:', err));
-        }
-
-        // Hàm thanh toán demo 1 Pi
-        async function testPayment() {
-            try {
-                await Pi.createPayment(
-                    {
-                        amount: 1,
-                        memo: "Test thanh toán từ app demo",
-                        metadata: { 
-                            appName: "Nông Sản Xuất Nhập Khẩu" 
-                        }
-                    },
-                    {
-                        // Khi Pi yêu cầu server approve
-                        onReadyForServerApproval: (paymentId) => {
-                            console.log("📌 Ready for approval:", paymentId);
+    <div class="footer">
+        Made with ❤️ by Hoài • GitHub: hoai3305
+    </div>
