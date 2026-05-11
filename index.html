@@ -10,14 +10,14 @@
             background: linear-gradient(#f0fdf4, #ecfdf5);
             color: #166534;
             text-align: center;
-            padding: 40px 20px;
+            padding: 50px 20px;
             min-height: 100vh;
         }
         .card {
             background: white;
-            max-width: 420px;
+            max-width: 400px;
             margin: 0 auto;
-            padding: 40px 25px;
+            padding: 40px 20px;
             border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
@@ -25,19 +25,19 @@
             background: #22c55e;
             color: white;
             border: none;
-            padding: 18px;
-            font-size: 1.25rem;
+            padding: 18px 40px;
+            font-size: 1.3rem;
             font-weight: bold;
             border-radius: 50px;
             width: 100%;
-            margin-top: 20px;
+            margin-top: 30px;
         }
     </style>
 </head>
 <body>
     <div class="card">
         <h1>🌾 CNS Nông Sản</h1>
-        <p style="margin: 25px 0; font-size: 1.2rem;">Thanh toán demo 1 Pi</p>
+        <p style="margin: 30px 0; font-size: 1.25rem;">Test Transaction 1 Pi</p>
         <button onclick="makePayment()">Thanh Toán Bằng Pi</button>
     </div>
 
@@ -53,25 +53,18 @@
 
                 await Pi.authenticate(['payments']);
 
-                const paymentData = {
+                // Cách đơn giản nhất
+                const payment = await Pi.createPayment({
                     amount: 1,
-                    memo: "Test Transaction - CNS Nông Sản",
-                    metadata: { type: "verification", app: "cns-nongsan" }
-                };
+                    memo: "Test Transaction CNS - Pass Step 10",
+                    metadata: { purpose: "verification" }
+                });
 
-                const callbacks = {
-                    onReadyForServerApproval: () => {},
-                    onReadyForServerCompletion: (paymentId, txid) => {
-                        alert(`✅ Giao dịch thành công!\n\nTransaction ID: ${txid || paymentId}\n\nBạn đã hoàn thành bước cuối cùng!`);
-                    },
-                    onCancel: () => alert("Thanh toán bị hủy."),
-                    onError: (err) => alert("Lỗi: " + err.message)
-                };
+                alert("✅ Thanh toán thành công!\n\nBạn đã hoàn thành bước Process a Transaction!");
 
-                Pi.createPayment(paymentData, callbacks);
-
-            } catch (err) {
-                alert("❌ Lỗi: " + err.message);
+            } catch (error) {
+                console.error(error);
+                alert("❌ Lỗi: " + (error.message || "Vui lòng thử lại"));
             } finally {
                 btn.disabled = false;
                 btn.textContent = "Thanh Toán Bằng Pi";
