@@ -5,10 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pi Demo App - Nông Sản Xuất Nhập Khẩu</title>
     
+    <!-- Pi SDK -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f0f8ff; }
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 50px; 
+            background: #f0f8ff; 
+        }
         h1 { color: #4CAF50; }
         button {
             padding: 15px 30px;
@@ -32,16 +38,13 @@
     <button onclick="testPayment()">Thanh toán demo 1 Pi</button>
 
     <script>
+        // ==================== KHỞI TẠO SDK (BẮT BUỘC) ====================
+        Pi.init({ version: "2.0" });   // ← Dòng này rất quan trọng!
+
         // Xử lý thanh toán cũ chưa hoàn tất
         function onIncompletePaymentFound(payment) {
             console.log("🔄 Phát hiện thanh toán cũ:", payment);
             if (!payment?.identifier) return;
-
-            fetch('/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId: payment.identifier, type: 'incomplete' })
-            }).catch(() => console.log("Backend chưa có - bỏ qua"));
         }
 
         // Hàm thanh toán demo
@@ -54,14 +57,8 @@
                         metadata: { appName: "Nông Sản Xuất Nhập Khẩu" }
                     },
                     {
-                        // === TỰ ĐỘNG APPROVE (Cách test nhanh) ===
                         onReadyForServerApproval: (paymentId) => {
                             console.log("📌 Ready for approval:", paymentId);
-                            
-                            // Tự động approve ngay lập tức
-                            console.log("🔄 Đang tự động approve...");
-                            // Pi SDK sẽ tự approve nếu backend không phản hồi kịp
-                            // Hoặc bạn có thể thử gọi API trực tiếp (nếu có key)
                         },
 
                         onReadyForServerCompletion: (paymentId, txid) => {
@@ -70,7 +67,8 @@
                         },
 
                         onCancel: () => {
-                            alert("🚫 Thanh toán đã bị hủy.");},
+                            alert("🚫 Thanh toán đã bị hủy.");
+                        },
 
                         onError: (error) => {
                             console.error("❌ Lỗi:", error);
@@ -82,9 +80,7 @@
                 console.error("❌ Lỗi createPayment:", err);
                 alert("Lỗi khởi tạo: " + (err.message || "Không xác định"));
             }
-        }
-
-        // Authenticate khi load trang
+        }// Đăng nhập Pi
         Pi.authenticate(['payments'], onIncompletePaymentFound)
             .then(auth => {
                 console.log("✅ Đăng nhập Pi thành công:", auth.user?.username || "Unknown");
