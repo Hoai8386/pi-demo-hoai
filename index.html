@@ -14,62 +14,33 @@
             padding: 20px;
         }
         .container { max-width: 480px; margin: 0 auto; }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo {
-            font-size: 3.5rem;
-            margin-bottom: 10px;
-        }
-        h1 { font-size: 1.8rem; color: #15803d; }
-        .subtitle { color: #4b7c5f; margin-top: 8px; }
-
+        .header { text-align: center; margin-bottom: 30px; }
+        .logo { font-size: 3.8rem; }
+        h1 { color: #15803d; margin: 10px 0; }
+        
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin: 30px 0;
+            gap: 18px;
         }
-
         .product-card {
             background: white;
-            border-radius: 20px;
             padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
             text-align: center;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
         }
-
-        .product-card:hover {
-            transform: translateY(-8px);
-        }
-
-        .price {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #16a34a;
-            margin: 12px 0;
-        }
-
+        .price { font-size: 2.1rem; font-weight: bold; color: #16a34a; margin: 12px 0; }
         .button {
             background: #22c55e;
             color: white;
             border: none;
-            padding: 14px 28px;
-            font-size: 1.1rem;
+            padding: 16px;
+            font-size: 1.15rem;
             font-weight: 700;
             border-radius: 50px;
             width: 100%;
             cursor: pointer;
-            margin-top: 12px;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            color: #4b7c5f;
-            font-size: 0.95rem;
         }
     </style>
 </head>
@@ -78,64 +49,71 @@
         <div class="header">
             <div class="logo">🌾</div>
             <h1>CNS Nông Sản</h1>
-            <p class="subtitle">Kết nối nông sản Việt Nam qua Pi Network</p>
+            <p>Kết nối nông dân - Người tiêu dùng qua Pi Network</p>
         </div>
 
         <div class="product-grid">
-            <!-- Sản phẩm 1 -->
             <div class="product-card">
-                <h3>🌾 Gạo ST25</h3>
-                <p>1kg - Cao cấp</p>
+                <h3>Gạo ST25</h3>
+                <p>1kg</p>
                 <div class="price">0.5 π</div>
                 <button class="button" onclick="pay(0.5, 'Gạo ST25 1kg')">Thanh Toán</button>
             </div>
-
-            <!-- Sản phẩm 2 -->
             <div class="product-card">
-                <h3>🥥 Dừa Xiêm</h3>
+                <h3>Dừa Xiêm</h3>
                 <p>5 trái</p>
                 <div class="price">1 π</div>
                 <button class="button" onclick="pay(1, 'Dừa Xiêm 5 trái')">Thanh Toán</button>
             </div>
-
-            <!-- Sản phẩm 3 -->
-            <div class="product-card"><h3>🍓 Trái Cây Tổng Hợp</h3>
-                <p>2kg</p>
-                <div class="price">2 π</div>
-                <button class="button" onclick="pay(2, 'Trái Cây Tổng Hợp 2kg')">Thanh Toán</button>
-            </div>
-
-            <!-- Sản phẩm 4 -->
-            <div class="product-card">
-                <h3>🐟 Cá Basa Phi Lẻ</h3>
-                <p>3kg</p>
-                <div class="price">3 π</div>
-                <button class="button" onclick="pay(3, 'Cá Basa 3kg')">Thanh Toán</button>
-            </div>
-        </div>
-
-        <div class="footer">
-            Made with ❤️ by Hoài • Testnet Mode
         </div>
     </div>
 
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
-        function pay(amount, product) {
-            const btns = document.querySelectorAll('.button');
-            btns.forEach(b => b.disabled = true);
+        async function pay(amount, product) {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = "Đang xử lý...";
 
-            // Tạo nút đang xử lý
-            const originalTexts = Array.from(btns).map(b => b.textContent);
-            
-            setTimeout(() => {
-                alert(`✅ Thanh toán thành công!\n\nSản phẩm: ${product}\nSố tiền: ${amount} π\nTransaction ID: #PI${Date.now()}`);
-                
-                // Reset nút
-                btns.forEach((b, i) => {
-                    b.disabled = false;
-                    b.textContent = originalTexts[i];
-                });
-            }, 1400);
+            try {
+                await Pi.init({ version: "2.0", sandbox: false }); // false = Mainnet
+
+                await Pi.authenticate(['payments']);
+
+                const paymentData = {
+                    amount: amount,
+                    memo: `${product} - CNS Nông Sản`,
+                    metadata: {
+                        product: product,
+                        amount: amount,app: "cns-nongsan",
+                        timestamp: Date.now()
+                    }
+                };
+
+                const callbacks = {
+                    onReadyForServerApproval: async (paymentId) => {
+                        await fetch('/api/payment', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ action: "approve", paymentId, amount, product })
+                        });
+                    },
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        alert(`✅ Thanh toán thành công!\n\nSản phẩm: ${product}\nSố tiền: ${amount} π\nTXID: ${txid}`);
+                    },
+                    onCancel: () => alert("⚠️ Thanh toán đã bị hủy."),
+                    onError: (error) => alert("❌ Lỗi: " + error.message)
+                };
+
+                Pi.createPayment(paymentData, callbacks);
+
+            } catch (error) {
+                alert("Lỗi: " + (error.message || "Vui lòng thử lại sau"));
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
         }
     </script>
 </body>
